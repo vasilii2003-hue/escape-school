@@ -1,0 +1,28 @@
+name: Смяна на въпросите от Excel
+on:
+  push:
+    paths:
+      - questions.xlsx
+      - tools/convert_questions.py
+      - .github/workflows/questions.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  update-questions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Проверка и замяна
+        run: python3 tools/convert_questions.py
+      - name: Запис на новата база
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add questions.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Автоматична актуализация на въпросите"
+            git push
+          fi
